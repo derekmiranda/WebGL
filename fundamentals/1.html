@@ -43,7 +43,10 @@
             // convert from 0->2 to -1->+1 (clipspace)
             vec2 clipspace = zeroToTwo - 1.0;
 
-            gl_Position = vec4(clipspace, 0, 1);
+            // gl_Position = vec4(clipspace, 0, 1);
+
+            // flip y coordinate
+            gl_Position = vec4(clipspace * vec2(1, -1), 0, 1);
         }
     </script>
     <script id='2d-fragment-shader' type='glsl'>
