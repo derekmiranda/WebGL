@@ -28,12 +28,22 @@
     </script>
     <script id='2d-vertex-shader' type='glsl'>
         // attribute will receive data from buffer
-        attribute vec4 a_position;
+        attribute vec2 a_position;
+
+        // using pixel values instead of relative clipspace
+        uniform vec2 u_resolution;
         // all shaders have a main func
         void main() { 
-            // gl_Position = special variable vertex shader
-            // is responsible for setting
-            gl_Position = a_position;
+            // convert position from pixels to 0.0 to 1.0
+            vec2 zeroToOne = a_position / u_resolution;
+
+            // convert from 0->1 to 0->2
+            vec2 zeroToTwo = zeroToOne * 2.0;
+
+            // convert from 0->2 to -1->+1 (clipspace)
+            vec2 clipspace = zeroToTwo - 1.0;
+
+            gl_Position = vec4(clipspace, 0, 1);
         }
     </script>
     <script id='2d-fragment-shader' type='glsl'>
@@ -84,6 +94,9 @@
         // get attribute location of a_position
         var positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
 
+        // set u_resolution uniform to convert pixels to clipspace
+        var resolutionUniformLocation = gl.getUniformLocation(program, 'u_resolution');
+
         // creating buffer for attribute to get data from
         var positionBuffer = gl.createBuffer();
 
@@ -93,11 +106,14 @@
         gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
 
         // put data in buffer by referencing thru bind point
-        // three 2d points
+        // rectancle made of 2 triangles
         var positions = [
-            0, 0,
-            0, 0.5,
-            0.7, 0,
+            10, 20,
+            80, 20,
+            10, 30,
+            10, 30,
+            80, 20,
+            80, 30,
         ];
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
     </script>
@@ -111,6 +127,9 @@
 
         // tell WebGL to use our program
         gl.useProgram(program);
+
+        // set resolution
+        gl.uniform2f(resolutionUniformLocation, gl.canvas.width, gl.canvas.height);
 
         // tell how to take data above and supply it to attribute
 
@@ -137,9 +156,9 @@
         // now we can execute GLSL program
         var primitiveType = gl.TRIANGLES;
         var offset = 0;
-        var count = 3;  // number of times vertex shader is run,
+        var count = 6;  // number of times vertex shader is run,
                         // based on how many points we supplied from positionBuffer
-                        // in this case, 3
+                        // in this case, 6
 
         gl.drawArrays(primitiveType, offset, count);
     </script>
