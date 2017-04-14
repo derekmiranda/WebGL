@@ -9,6 +9,7 @@
     <title>Document</title>
 </head>
 
+<!--Best way to size canvas is thru CSS-->
 <style>
     canvas#c {
         width: 400px;
@@ -23,9 +24,9 @@
         var canvas = document.getElementById('c');
         var gl = canvas.getContext('webgl');
         // no webgl available
-        if (!gl) console.log('No WebGL');
+        if (!gl) throw 'No WebGL';
     </script>
-    <script id='2d-vertex-shader' type='notjs'>
+    <script id='2d-vertex-shader' type='glsl'>
         // attribute will receive data from buffer
         attribute vec4 a_position;
         // all shaders have a main func
@@ -35,12 +36,12 @@
             gl_Position = a_position;
         }
     </script>
-    <script id='2d-fragment-shader' type='notjs'>
+    <script id='2d-fragment-shader' type='glsl'>
         // need to set precision for fragment shaders
         precision mediump float;
         void main() {
             // gl_FragColor - special var fragment shader
-            // responsible for setting
+            // is responsible for setting
             gl_FragColor = vec4(1, 0, .5, 1);
         }
     </script>
