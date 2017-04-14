@@ -52,10 +52,14 @@
     <script id='2d-fragment-shader' type='glsl'>
         // need to set precision for fragment shaders
         precision mediump float;
+
+        // uniform color input
+        uniform vec4 u_color;
+
         void main() {
             // gl_FragColor - special var fragment shader
             // is responsible for setting
-            gl_FragColor = vec4(1, 0, .5, 1);
+            gl_FragColor = u_color;
         }
     </script>
     <script id='initialization'>
@@ -97,8 +101,11 @@
         // get attribute location of a_position
         var positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
 
-        // set u_resolution uniform to convert pixels to clipspace
+        // get u_resolution uniform to convert pixels to clipspace
         var resolutionUniformLocation = gl.getUniformLocation(program, 'u_resolution');
+        
+        // get location of u_color uniform
+        var colorUniformLocation = gl.getUniformLocation(program, "u_color");
 
         // creating buffer for attribute to get data from
         var positionBuffer = gl.createBuffer();
@@ -156,14 +163,47 @@
         // now that ARRAY_BUFFER bound to positionBuffer
         // we're free to bind something else to ARRAY_BUFFER bind point
 
-        // now we can execute GLSL program
-        var primitiveType = gl.TRIANGLES;
-        var offset = 0;
-        var count = 6;  // number of times vertex shader is run,
-                        // based on how many points we supplied from positionBuffer
-                        // in this case, 6
+        // draw 50 random rectangles in random colors
+        for (var ii = 0; ii < 50; ii += 1) {
+            // setup random rectangle
+            // will write to positionBuffer b/c
+            // it's the last thing bound on ARRAY_BUFFER
+            setRectangle(
+                gl, randomInt(300), randomInt(300), randomInt(300), randomInt(300)
+            );
 
-        gl.drawArrays(primitiveType, offset, count);
+            // set random color
+            gl.uniform4f(colorUniformLocation, Math.random(), Math.random(), Math.random(), 1);
+
+            // draw rectangle
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+        }
+
+        // return random int from 0 to -1
+        function randomInt(range) {
+            return Math.floor(Math.random() * range);
+        }
+
+        // fills buffer w/ values that define rectangle
+        function setRectangle(gl, x, y, width, height) {
+            var x1 = x;
+            var x2 = x + width;
+            var y1 = y;
+            var y2 = y + width;
+
+            // NOTE: gl.bufferData(gl.ARRAY_BUFFER, ...) will affect
+            // whatever buffer is bound to 'ARRAY_BUFFER' bind point
+            // but only have one buffer so far. If we had more than one
+            // buffer, we'd want to bind buffer to 'ARRAY_BUFFER' first
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+                x1, y1,
+                x2, y1,
+                x1, y2,
+                x1, y2,
+                x2, y1,
+                x2, y2,
+            ]), gl.STATIC_DRAW);
+        }
     </script>
 </body>
 
