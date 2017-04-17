@@ -110,11 +110,6 @@
         // creating buffer for attribute to get data from
         var positionBuffer = gl.createBuffer();
 
-        // bind position buffer
-        // so that functions can access positionBuffer
-        // thru bind point, gl.ARRAY_BUFFER
-        // gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-
         // put data in buffer by referencing thru bind point
         // rectancle made of 2 triangles
         var positions = [
@@ -189,7 +184,7 @@
             var x1 = x;
             var x2 = x + width;
             var y1 = y;
-            var y2 = y + width;
+            var y2 = y + height;
 
             // NOTE: gl.bufferData(gl.ARRAY_BUFFER, ...) will affect
             // whatever buffer is bound to 'ARRAY_BUFFER' bind point
