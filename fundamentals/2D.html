@@ -1,0 +1,147 @@
+<!--https://webglfundamentals.org/webgl/lessons/webgl-fundamentals.html-->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<style>
+    canvas#c {
+        width: 400px;
+        height: 300px;
+    }
+</style>
+
+<body>
+    <canvas id='c'></canvas>
+    <script id='webgl-utils' src='./webgl-utils.js'></script>
+    <script>
+        var canvas = document.getElementById('c');
+        var gl = canvas.getContext('webgl');
+        // no webgl available
+        if (!gl) console.log('No WebGL');
+    </script>
+    <script id='2d-vertex-shader' type='notjs'>
+        // attribute will receive data from buffer
+        attribute vec4 a_position;
+        // all shaders have a main func
+        void main() { 
+            // gl_Position = special variable vertex shader
+            // is responsible for setting
+            gl_Position = a_position;
+        }
+    </script>
+    <script id='2d-fragment-shader' type='notjs'>
+        // need to set precision for fragment shaders
+        precision mediump float;
+        void main() {
+            // gl_FragColor - special var fragment shader
+            // responsible for setting
+            gl_FragColor = vec4(1, 0, .5, 1);
+        }
+    </script>
+    <script id='initialization'>
+        function createShader(gl, type, source) {
+            var shader = gl.createShader(type);
+            gl.shaderSource(shader, source);
+            gl.compileShader(shader);
+            var success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
+            if (success) {
+                return shader;
+            }
+
+            gl.deleteShader(shader);
+        }
+
+        // get GLSL code from script tags
+        var vertexShaderSource = document.getElementById('2d-vertex-shader').text;
+        var fragmentShaderSource = document.getElementById('2d-fragment-shader').text;
+        // create shaders
+        var vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+        var fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+
+        function createProgram(gl, vertexShader, fragmentShader) {
+            var program = gl.createProgram();
+            gl.attachShader(program, vertexShader);
+            gl.attachShader(program, fragmentShader);
+            gl.linkProgram(program);
+            var success = gl.getProgramParameter(program, gl.LINK_STATUS);
+            if (success) {
+                return program;
+            }
+
+            console.log(gl.getProgramInfoLog(program));
+            gl.deleteProgram(program);
+        }
+
+        var program = createProgram(gl, vertexShader, fragmentShader);
+
+        // get attribute location of a_position
+        var positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
+
+        // creating buffer for attribute to get data from
+        var positionBuffer = gl.createBuffer();
+
+        // bind position buffer
+        // so that functions can access positionBuffer
+        // thru bind point, gl.ARRAY_BUFFER
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+
+        // put data in buffer by referencing thru bind point
+        // three 2d points
+        var positions = [
+            0, 0,
+            0, 0.5,
+            0.7, 0,
+        ];
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+    </script>
+    <script id="rendering">
+        webglUtils.resizeCanvasToDisplaySize(gl.canvas);
+        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+
+        // clear the canvas to transparent
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+
+        // tell WebGL to use our program
+        gl.useProgram(program);
+
+        // tell how to take data above and supply it to attribute
+
+        // first, turn attribute on
+        gl.enableVertexAttribArray(positionAttributeLocation);
+
+        // then pull data out
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+
+        // tell attribute how to get data out of positionBuffer (ARRAY_BUFFER)
+        // attribute bound to positionBuffer
+        var size = 2;          // 2 components per iteration
+        var type = gl.FLOAT;   // data is 32 bit floats
+        var normalize = false; // don't normalize data
+        var stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get next position
+        var offset = 0;        // start at beginning of buffer
+        gl.vertexAttribPointer(
+            positionAttributeLocation, size, type, normalize, stride, offset
+        );
+
+        // now that ARRAY_BUFFER bound to positionBuffer
+        // we're free to bind something else to ARRAY_BUFFER bind point
+
+        // now we can execute GLSL program
+        var primitiveType = gl.TRIANGLES;
+        var offset = 0;
+        var count = 3;  // number of times vertex shader is run,
+                        // based on how many points we supplied from positionBuffer
+                        // in this case, 3
+
+        gl.drawArrays(primitiveType, offset, count);
+    </script>
+</body>
+
+</html>
