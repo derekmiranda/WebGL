@@ -32,10 +32,17 @@
 
         // using pixel values instead of relative clipspace
         uniform vec2 u_resolution;
+
+        // applying translation
+        uniform vec2 u_translation;
+
         // all shaders have a main func
         void main() { 
+            // add translation
+            vec2 position = a_position + u_translation;
+
             // convert position from pixels to 0.0 to 1.0
-            vec2 zeroToOne = a_position / u_resolution;
+            vec2 zeroToOne = position / u_resolution;
 
             // convert from 0->1 to 0->2
             vec2 zeroToTwo = zeroToOne * 2.0;
@@ -103,9 +110,11 @@
 
         // get u_resolution uniform to convert pixels to clipspace
         var resolutionUniformLocation = gl.getUniformLocation(program, 'u_resolution');
-        
+
         // get location of u_color uniform
         var colorUniformLocation = gl.getUniformLocation(program, "u_color");
+
+        var translationUniformLocation = gl.getUniformLocation(program, "u_translation");
 
         // creating buffer for attribute to get data from
         var positionBuffer = gl.createBuffer();
@@ -119,7 +128,13 @@
         var translation = [10, 20];
         var width = 100;
         var height = 30;
-        var color = [Math.random(), Math.random(),Math.random(), 1];
+        var color = [Math.random(), Math.random(), Math.random(), 1];
+
+        // bind position buffer
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+
+        // put geometry data into buffer
+        setGeometry(gl);
 
         drawScene();
 
@@ -139,14 +154,11 @@
             // set resolution
             gl.uniform2f(resolutionUniformLocation, gl.canvas.width, gl.canvas.height);
 
+            // set translation
+            gl.uniform2fv(translationUniformLocation, translation);
+
             // turn on attribute
             gl.enableVertexAttribArray(positionAttributeLocation);
-
-            // bind position buffer
-            gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-
-            // setup rectangle
-            setRectangle(gl, translation[0], translation[1], width, height);
 
             // tell attribute how to get data out of positionBuffer
             var size = 2;
@@ -164,16 +176,49 @@
             // set color
             gl.uniform4fv(colorUniformLocation, color);
 
-            // draw rectangle
+            // draw rectangles for F
             var primitiveType = gl.TRIANGLES;
             var offset = 0;
-            var count = 6;
+            var count = 6 * 3;
             gl.drawArrays(primitiveType, offset, count);
         }
 
         // return random int from 0 to -1
         function randomInt(range) {
             return Math.floor(Math.random() * range);
+        }
+
+        // fill buffer w/ rectancle values that create 'F' shape
+        function setGeometry(gl) {
+            gl.bufferData(
+                gl.ARRAY_BUFFER,
+                new Float32Array([
+                    // left column
+                    0, 0,
+                    30, 0,
+                    0, 150,
+                    0, 150,
+                    30, 0,
+                    30, 150,
+
+                    // top rung
+                    30, 0,
+                    100, 0,
+                    30, 30,
+                    30, 30,
+                    100, 0,
+                    100, 30,
+
+                    // middle rung
+                    30, 60,
+                    67, 60,
+                    30, 90,
+                    30, 90,
+                    67, 60,
+                    67, 90,
+                ]),
+                gl.STATIC_DRAW
+            );
         }
 
         // fills buffer w/ values that define rectangle
