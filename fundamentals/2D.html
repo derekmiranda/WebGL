@@ -109,69 +109,66 @@
 
         // creating buffer for attribute to get data from
         var positionBuffer = gl.createBuffer();
-
-        // bind position buffer
-        // so that functions can access positionBuffer
-        // thru bind point, gl.ARRAY_BUFFER
-        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-
-        // put data in buffer by referencing thru bind point
-        // rectancle made of 2 triangles
-        var positions = [
-            10, 20,
-            80, 20,
-            10, 30,
-            10, 30,
-            80, 20,
-            80, 30,
-        ];
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
     </script>
     <script id="rendering">
-        webglUtils.resizeCanvasToDisplaySize(gl.canvas);
-        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-
-        // clear the canvas to transparent
-        gl.clearColor(0, 0, 0, 0);
-        gl.clear(gl.COLOR_BUFFER_BIT);
-
-        // tell WebGL to use our program
-        gl.useProgram(program);
-
-        // set resolution
-        gl.uniform2f(resolutionUniformLocation, gl.canvas.width, gl.canvas.height);
-
-        // tell how to take data above and supply it to attribute
-
-        // first, turn attribute on
-        gl.enableVertexAttribArray(positionAttributeLocation);
-
-        // then pull data out
-        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-
-        // tell attribute how to get data out of positionBuffer (ARRAY_BUFFER)
-        // attribute bound to positionBuffer
-        var size = 2;          // 2 components per iteration
-        var type = gl.FLOAT;   // data is 32 bit floats
-        var normalize = false; // don't normalize data
-        var stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get next position
-        var offset = 0;        // start at beginning of buffer
-        gl.vertexAttribPointer(
-            positionAttributeLocation, size, type, normalize, stride, offset
-        );
 
         // now that ARRAY_BUFFER bound to positionBuffer
         // we're free to bind something else to ARRAY_BUFFER bind point
 
         // rectangle data
-        var translation = [0, 0];
+        var translation = [10, 20];
         var width = 100;
         var height = 30;
         var color = [Math.random(), Math.random(),Math.random(), 1];
 
+        drawScene();
+
         // draw scene
         function drawScene() {
-            
+            webglUtils.resizeCanvasToDisplaySize(gl.canvas);
+
+            // tell WebGL how to convert clip space to pixels
+            gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+
+            // clear canvas
+            gl.clear(gl.COLOR_BUFFER_BIT);
+
+            // tell it to use our program
+            gl.useProgram(program);
+
+            // set resolution
+            gl.uniform2f(resolutionUniformLocation, gl.canvas.width, gl.canvas.height);
+
+            // turn on attribute
+            gl.enableVertexAttribArray(positionAttributeLocation);
+
+            // bind position buffer
+            gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+
+            // setup rectangle
+            setRectangle(gl, translation[0], translation[1], width, height);
+
+            // tell attribute how to get data out of positionBuffer
+            var size = 2;
+            var type = gl.FLOAT;
+            var normalize = false;
+            var stride = 0;
+            var offset = 0;
+            gl.vertexAttribPointer(
+                positionAttributeLocation, size, type, normalize, stride, offset
+            );
+
+            // set resolution
+            gl.uniform2f(resolutionUniformLocation, gl.canvas.width, gl.canvas.height);
+
+            // set color
+            gl.uniform4fv(colorUniformLocation, color);
+
+            // draw rectangle
+            var primitiveType = gl.TRIANGLES;
+            var offset = 0;
+            var count = 6;
+            gl.drawArrays(primitiveType, offset, count);
         }
 
         // return random int from 0 to -1
@@ -184,7 +181,7 @@
             var x1 = x;
             var x2 = x + width;
             var y1 = y;
-            var y2 = y + width;
+            var y2 = y + height;
 
             // NOTE: gl.bufferData(gl.ARRAY_BUFFER, ...) will affect
             // whatever buffer is bound to 'ARRAY_BUFFER' bind point
