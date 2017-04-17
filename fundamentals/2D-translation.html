@@ -133,7 +133,8 @@
         // bind position buffer
         gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
 
-        // put geometry data into buffer
+        // set geometry ONCE
+        // then update translation in vertex shader
         setGeometry(gl);
 
         drawScene();
