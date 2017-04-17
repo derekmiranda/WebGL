@@ -163,20 +163,15 @@
         // now that ARRAY_BUFFER bound to positionBuffer
         // we're free to bind something else to ARRAY_BUFFER bind point
 
-        // draw 50 random rectangles in random colors
-        for (var ii = 0; ii < 50; ii += 1) {
-            // setup random rectangle
-            // will write to positionBuffer b/c
-            // it's the last thing bound on ARRAY_BUFFER
-            setRectangle(
-                gl, randomInt(300), randomInt(300), randomInt(300), randomInt(300)
-            );
+        // rectangle data
+        var translation = [0, 0];
+        var width = 100;
+        var height = 30;
+        var color = [Math.random(), Math.random(),Math.random(), 1];
 
-            // set random color
-            gl.uniform4f(colorUniformLocation, Math.random(), Math.random(), Math.random(), 1);
-
-            // draw rectangle
-            gl.drawArrays(gl.TRIANGLES, 0, 6);
+        // draw scene
+        function drawScene() {
+            
         }
 
         // return random int from 0 to -1
